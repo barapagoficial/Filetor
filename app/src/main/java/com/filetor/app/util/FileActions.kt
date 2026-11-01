@@ -63,6 +63,24 @@ object FileActions {
         }
     }
 
+    const val ACTION_OPEN_FOLDER = "com.filetor.app.OPEN_FOLDER"
+
+    fun pinFolderShortcut(context: Context, dir: File): Boolean {
+        if (!androidx.core.content.pm.ShortcutManagerCompat.isRequestPinShortcutSupported(context)) return false
+        val intent = Intent(context, com.filetor.app.MainActivity::class.java).apply {
+            action = ACTION_OPEN_FOLDER
+            putExtra("path", dir.absolutePath)
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        }
+        val info = androidx.core.content.pm.ShortcutInfoCompat.Builder(context, "folder_" + dir.absolutePath.hashCode())
+            .setShortLabel(dir.name.ifEmpty { "Almacenamiento" })
+            .setLongLabel(dir.absolutePath)
+            .setIcon(androidx.core.graphics.drawable.IconCompat.createWithResource(context, com.filetor.app.R.mipmap.ic_launcher))
+            .setIntent(intent)
+            .build()
+        return androidx.core.content.pm.ShortcutManagerCompat.requestPinShortcut(context, info, null)
+    }
+
     fun copyText(context: Context, label: String, text: String) {
         val cm = context.getSystemService(ClipboardManager::class.java)
         cm.setPrimaryClip(ClipData.newPlainText(label, text))

@@ -29,6 +29,9 @@ import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material.icons.rounded.Tab
+import androidx.compose.material.icons.rounded.AddToHomeScreen
+import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material.icons.rounded.Unarchive
 import androidx.compose.material.icons.rounded.CreateNewFolder
 import androidx.compose.material.icons.rounded.DriveFolderUpload
@@ -232,6 +235,18 @@ private fun ItemMenuSheet(state: FileActionState, entry: FileEntry, close: () ->
             }
             if (entry.isDirectory) {
                 MenuRow(Icons.Rounded.Tab, "Abrir en pestaña nueva", act { vm.openInFiles(entry.path, newTab = true) })
+                MenuRow(Icons.Rounded.AddToHomeScreen, "Acceso directo en inicio", act {
+                    if (!FileActions.pinFolderShortcut(context, f)) vm.message("Tu launcher no admite accesos directos")
+                })
+                val noMedia = File(f, ".nomedia").exists()
+                MenuRow(if (noMedia) Icons.Rounded.Visibility else Icons.Rounded.VisibilityOff,
+                    if (noMedia) "Mostrar en la galería" else "Ocultar de la galería", act {
+                        val nm = File(f, ".nomedia")
+                        val ok = if (noMedia) nm.delete() else runCatching { nm.createNewFile() }.getOrDefault(false)
+                        vm.message(if (!ok) "No se pudo cambiar" else if (noMedia) "La carpeta volverá a aparecer en la galería" else "La galería ignorará esta carpeta")
+                        runCatching { android.media.MediaScannerConnection.scanFile(context, arrayOf(f.absolutePath), null, null) }
+                        state.onChanged()
+                    })
             } else {
                 MenuRow(Icons.AutoMirrored.Rounded.OpenInNew, "Abrir con…", act { state.open(entry, forceExternal = true) })
                 if (FileType.isEditable(entry.name) || entry.type == FileType.OTHER) MenuRow(Icons.Rounded.Edit, "Editar como texto", act { vm.push(Screen.TextEditor(entry.path)) })

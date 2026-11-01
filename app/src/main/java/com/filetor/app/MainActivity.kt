@@ -101,6 +101,10 @@ class MainActivity : ComponentActivity() {
                 vm.onPick = { files -> returnPicked(files) }
                 vm.message("Elige un archivo para compartir")
             }
+            FileActions.ACTION_OPEN_FOLDER -> {
+                val path = intent.getStringExtra("path") ?: return
+                if (File(path).isDirectory) vm.openInFiles(path) else vm.message("La carpeta ya no existe")
+            }
             Intent.ACTION_VIEW -> {
                 val uri = intent.data ?: return
                 lifecycleScope.launch {
