@@ -8,6 +8,10 @@ PKG=com.filetor.app
 dump() { adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1; adb pull /sdcard/ui.xml /tmp/ui.xml >/dev/null 2>&1; }
 tap() {
   dump
+  if grep -q "isn&apos;t responding\|isn't responding" /tmp/ui.xml; then
+    echo "Dismissing system ANR dialog"; adb shell input keyevent 4; sleep 1; dump
+    if grep -q "responding" /tmp/ui.xml; then adb shell am start -n $PKG/.MainActivity >/dev/null; sleep 2; dump; fi
+  fi
   local xy
   xy=$(python3 - "$1" <<'PY'
 import re, sys, os
@@ -50,6 +54,8 @@ adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:
 adb shell content call --uri content://media/external/file --method scan_volume --arg external_primary >/dev/null 2>&1 || true
 
 adb logcat -c
+adb shell settings put global hide_error_dialogs 1 2>/dev/null || true
+sleep 20
 adb shell am start -n $PKG/.MainActivity
 shot 01_home 6
 tap "Archivos";            shot 02_browser
