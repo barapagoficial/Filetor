@@ -1,0 +1,38 @@
+name: Build APK
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build release APK
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon --stacktrace assembleRelease
+      - name: Rename APK
+        run: cp app/build/outputs/apk/release/app-release.apk Filetor.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Filetor-apk
+          path: Filetor.apk
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="build-${{ github.run_number }}"
+          gh release create "$TAG" Filetor.apk --target "${{ github.sha }}" \
+            --title "Filetor (build ${{ github.run_number }})" \
+            --notes "APK generado automáticamente desde ${{ github.ref_name }} @ ${{ github.sha }}" \
+            --prerelease
