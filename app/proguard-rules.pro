@@ -1,0 +1,15 @@
+# zip4j / commons-compress / junrar use reflection-free APIs but keep them intact to be safe
+-keep class net.lingala.zip4j.** { *; }
+-keep class org.apache.commons.compress.** { *; }
+-keep class org.tukaani.xz.** { *; }
+-keep class com.github.junrar.** { *; }
+-dontwarn org.apache.commons.compress.**
+-dontwarn org.tukaani.xz.**
+-dontwarn com.github.luben.zstd.**
+-dontwarn org.brotli.dec.**
+-dontwarn org.objectweb.asm.**
+-dontwarn org.osgi.**
+-dontwarn org.slf4j.**
+-dontwarn com.github.junrar.**
+-dontwarn javax.**
+-dontwarn java.awt.**

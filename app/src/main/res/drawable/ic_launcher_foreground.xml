@@ -1,0 +1,19 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- folder back -->
+    <path android:fillColor="#B3FFFFFF"
+        android:pathData="M31,40.5a5,5 0 0,1 5,-5h11.5a3,3 0 0,1 2.1,0.9l4.4,4.4h18a5,5 0 0,1 5,5v22.7a5,5 0 0,1 -5,5h-36a5,5 0 0,1 -5,-5z" />
+    <!-- folder front -->
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M31,50a5,5 0 0,1 5,-5h41a5,5 0 0,1 5,5v18.5a5,5 0 0,1 -5,5h-41a5,5 0 0,1 -5,-5z" />
+    <!-- zipper / file lines -->
+    <path android:fillColor="#FF5B6CF0"
+        android:pathData="M40,53.5h18a2,2 0 0,1 0,4h-18a2,2 0 0,1 0,-4z" />
+    <path android:fillColor="#FFD9609E"
+        android:pathData="M40,61h11a2,2 0 0,1 0,4h-11a2,2 0 0,1 0,-4z" />
+    <path android:fillColor="#FF7B5CE6"
+        android:pathData="M66,52.5a6.5,6.5 0 1,1 0,13a6.5,6.5 0 1,1 0,-13z" />
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M64.6,55.6l3.6,3.4l-3.6,3.4z" />
+</vector>
