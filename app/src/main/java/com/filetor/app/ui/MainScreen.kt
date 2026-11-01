@@ -93,7 +93,8 @@ fun MainScreen(vm: AppViewModel) {
             SnackbarHost(snackbar) { data -> Snackbar(data, shape = RoundedCornerShape(16.dp)) }
         },
         bottomBar = {
-            if (top == null) Column {
+            val selecting = vm.mainTab == 1 && vm.tab.selection.isNotEmpty()
+            if (top == null && !selecting) Column {
                 OperationsPanel()
                 NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
                     val items = listOf(
@@ -112,7 +113,7 @@ fun MainScreen(vm: AppViewModel) {
                         )
                     }
                 }
-            } else Box(Modifier.navigationBarsPadding()) { OperationsPanel() }
+            } else if (top != null) Box(Modifier.navigationBarsPadding()) { OperationsPanel() }
         },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
     ) { padding ->
