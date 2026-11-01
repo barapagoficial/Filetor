@@ -147,8 +147,9 @@ fun HomeScreen(vm: AppViewModel, onOpenFile: (FileEntry) -> Unit) {
 
 @Composable
 private fun StorageCard(v: StorageVolumeInfo, modifier: Modifier, onClick: () -> Unit) {
-    val primary = MaterialTheme.colorScheme.primary
-    val tertiary = MaterialTheme.colorScheme.tertiary
+    val dark = com.filetor.app.ui.theme.isAppInDarkTheme()
+    val primary = MaterialTheme.colorScheme.primary.let { if (dark) lerpColor(it, Color.Black, 0.5f) else it }
+    val tertiary = MaterialTheme.colorScheme.tertiary.let { if (dark) lerpColor(it, Color.Black, 0.5f) else it }
     val fraction = Format.percent(v.used, v.total)
     Box(
         modifier
@@ -179,7 +180,7 @@ private fun StorageCard(v: StorageVolumeInfo, modifier: Modifier, onClick: () ->
                 Text("${Format.size(v.used)} de ${Format.size(v.total)}", style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.9f), modifier = Modifier.padding(bottom = 6.dp))
             }
             Spacer(Modifier.height(10.dp))
-            UsageBar(fraction, color = Color.White)
+            UsageBar(fraction, color = Color.White, warnWhenFull = false)
         }
     }
 }

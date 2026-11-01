@@ -35,8 +35,7 @@ import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Save
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material.icons.rounded.ZoomIn
-import androidx.compose.material.icons.rounded.ZoomOut
+import androidx.compose.material.icons.rounded.FormatSize
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -116,8 +115,7 @@ fun TextEditorScreen(vm: AppViewModel, path: String) {
         }, onBack = { if (dirty) confirmExit = true else vm.pop() }) {
             IconButton({ findOpen = !findOpen }) { Icon(Icons.Rounded.Search, "Buscar") }
             IconButton({ wrap = !wrap }) { Icon(Icons.AutoMirrored.Rounded.WrapText, "Ajuste de línea", tint = if (wrap) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant) }
-            IconButton({ fontSize = (fontSize - 1).coerceAtLeast(9f) }) { Icon(Icons.Rounded.ZoomOut, "Reducir") }
-            IconButton({ fontSize = (fontSize + 1).coerceAtMost(28f) }) { Icon(Icons.Rounded.ZoomIn, "Aumentar") }
+            IconButton({ fontSize = if (fontSize >= 22f) 11f else fontSize + 3f }) { Icon(Icons.Rounded.FormatSize, "Tamaño de letra") }
             if (!readOnly) IconButton({ save() }, enabled = dirty) { Icon(Icons.Rounded.Save, "Guardar") }
         }
         AnimatedVisibility(findOpen) {

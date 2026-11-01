@@ -10,8 +10,10 @@ tap() {
   dump
   local xy
   xy=$(python3 - "$1" <<'PY'
-import re, sys
+import re, sys, os
 t = sys.argv[1]
+last = os.environ.get("LAST") == "1"
+found = None
 x = open('/tmp/ui.xml', encoding='utf-8').read()
 for m in re.finditer(r'<node [^>]*>', x):
     n = m.group(0)
@@ -20,13 +22,19 @@ for m in re.finditer(r'<node [^>]*>', x):
     if txt == t or desc == t or (len(t) > 3 and txt.startswith(t)):
         b = re.search(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', n).groups()
         b = list(map(int, b))
-        print((b[0]+b[2])//2, (b[1]+b[3])//2)
-        break
+        found = ((b[0]+b[2])//2, (b[1]+b[3])//2)
+        if not last: break
+if found: print(*found)
 PY
 )
-  if [ -n "$xy" ]; then adb shell input tap $xy; echo "tap '$1' -> $xy"; else echo "NOT FOUND: '$1'"; fi
+  if [ -n "$xy" ]; then
+    if [ "${LONG:-0}" = 1 ]; then set -- "$1" $xy; adb shell input swipe $2 $3 $2 $3 900; else adb shell input tap $xy; fi
+    echo "tap '$1' -> $xy"
+  else echo "NOT FOUND: '$1'"; fi
   sleep 2
 }
+longtap() { LONG=1 tap "$1"; }
+check() { if adb shell "[ -e '$1' ]"; then echo "PASS: $1"; else echo "FAIL: $1"; fi; }
 shot() { sleep "${2:-2}"; adb exec-out screencap -p > "$OUT/$1.png"; echo "shot $1"; }
 back() { adb shell input keyevent 4; sleep 1.5; }
 
@@ -68,7 +76,28 @@ tap "notes.txt";           shot 14_editor 3
 back
 adb shell input swipe 500 1500 500 600
 shot 15_scrolled
+
+# --- Archive operations ---
+adb shell input swipe 500 600 500 1800; sleep 1
+tap "demo.zip"; tap "Extraer todo"; sleep 4; shot 16_after_extract_zip
+check /sdcard/Download/demo/folder/sub/deep.txt
+check /sdcard/Download/demo/notes.txt
+back
+tap "demo.7z"; tap "Extraer todo"; sleep 4
+check "/sdcard/Download/demo (1)/folder/file1.txt"
+back
+tap "demo.tar.gz"; shot 17_targz_view; tap "Extraer todo"; sleep 4
+check "/sdcard/Download/demo (2)/folder/file3.txt"
+back
+adb shell input swipe 500 600 500 1800; sleep 1
+longtap "folder"; shot 18_selection
+tap "Más"; shot 19_more_menu
+tap "Comprimir"; shot 20_compress_dialog
+LAST=1 tap "Comprimir"; sleep 5; shot 21_after_compress
+adb shell ls -la /sdcard/Download/
+check /sdcard/Download/folder.zip
 adb logcat -d > "$OUT/logcat.txt"
-grep -E "FATAL EXCEPTION|AndroidRuntime" -A 30 "$OUT/logcat.txt" > "$OUT/crashes.txt" || true
+grep -E "FATAL EXCEPTION" -A 30 "$OUT/logcat.txt" > "$OUT/crashes.txt" || true
 echo "=== crashes ==="; cat "$OUT/crashes.txt"
+adb shell ls -R /sdcard/Download > "$OUT/tree.txt" 2>&1
 exit 0

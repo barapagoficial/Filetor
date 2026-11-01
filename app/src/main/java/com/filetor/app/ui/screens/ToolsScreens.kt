@@ -238,7 +238,7 @@ fun AnalyzerScreen(vm: AppViewModel) {
                     Column(Modifier.weight(1f)) {
                         Row { Text(e.name, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis); Text(Format.size(size), style = MaterialTheme.typography.labelLarge) }
                         Spacer(Modifier.height(6.dp))
-                        UsageBar(Format.percent(size, r.topFolders.firstOrNull()?.second ?: 1), height = 6.dp)
+                        UsageBar(Format.percent(size, r.topFolders.firstOrNull()?.second ?: 1), height = 6.dp, warnWhenFull = false)
                     }
                 }
             }

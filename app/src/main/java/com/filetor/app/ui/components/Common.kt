@@ -54,11 +54,11 @@ fun SectionTitle(text: String, modifier: Modifier = Modifier, action: String? = 
 }
 
 @Composable
-fun UsageBar(fraction: Float, modifier: Modifier = Modifier, height: Dp = 8.dp, color: Color = MaterialTheme.colorScheme.primary) {
+fun UsageBar(fraction: Float, modifier: Modifier = Modifier, height: Dp = 8.dp, color: Color = MaterialTheme.colorScheme.primary, warnWhenFull: Boolean = true) {
     var target by remember { mutableStateOf(0f) }
     LaunchedEffect(fraction) { target = fraction }
     val anim by animateFloatAsState(target, tween(900), label = "usage")
-    val warn = fraction > 0.9f
+    val warn = warnWhenFull && fraction > 0.9f
     Box(modifier.fillMaxWidth().height(height).clip(CircleShape).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))) {
         Box(Modifier.fillMaxWidth(anim.coerceIn(0.005f, 1f)).fillMaxHeight().clip(CircleShape)
             .background(if (warn) MaterialTheme.colorScheme.error else color))

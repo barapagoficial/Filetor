@@ -76,9 +76,8 @@ fun TypeIconBox(type: FileType, size: Dp, modifier: Modifier = Modifier, corner:
 }
 
 @Composable
-fun FileThumb(entry: FileEntry, size: Dp, modifier: Modifier = Modifier) {
+fun FileThumb(entry: FileEntry, size: Dp, modifier: Modifier = Modifier, corner: Dp = if (size > 100.dp) 16.dp else size * 0.28f) {
     val type = entry.type
-    val corner = size * 0.28f
     val context = LocalContext.current
     when {
         Prefs.showThumbnails && (type == FileType.IMAGE || type == FileType.VIDEO) -> {

@@ -54,12 +54,12 @@ jobs:
           profile: pixel_6
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: bash scripts/smoke.sh
+          script: bash scripts/smoke.sh 2>&1 | tee shots_log.txt; mkdir -p shots; cp shots_log.txt shots/run_log.txt
       - name: Publish screenshots
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd shots && zip -r ../smoke-shots.zip . && cd ..
-          gh release create "smoke-${{ github.run_number }}" smoke-shots.zip shots/crashes.txt --prerelease \
+          gh release create "smoke-${{ github.run_number }}" smoke-shots.zip shots/crashes.txt shots/tree.txt shots/run_log.txt --prerelease \
             --title "Smoke test ${{ github.run_number }} ($TAG)" --notes "Capturas del emulador para $TAG"
