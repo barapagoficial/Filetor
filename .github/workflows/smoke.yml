@@ -1,0 +1,65 @@
+name: UI smoke test
+
+on:
+  workflow_run:
+    workflows: ["Build APK"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  smoke:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - name: Download APK from latest build release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG=$(gh release list --limit 20 --json tagName -q '[.[] | select(.tagName | startswith("build-"))][0].tagName')
+          echo "Using $TAG"; echo "TAG=$TAG" >> $GITHUB_ENV
+          gh release download "$TAG" -p Filetor.apk
+      - name: Prepare test data
+        run: |
+          mkdir -p testdata/folder/sub && cd testdata
+          for i in 1 2 3 4 5; do echo "Archivo de prueba $i" > folder/file$i.txt; done
+          echo "Hola desde Filetor" > folder/sub/deep.txt
+          printf 'Línea 1\nLínea 2\nfun main() = println("hola")\n' > notes.txt
+          python3 -c "import zlib,struct
+          def png(n,c):
+              raw=b''.join(b'\x00'+bytes(c)*64 for _ in range(64))
+              def ch(t,d): return struct.pack('>I',len(d))+t+d+struct.pack('>I',zlib.crc32(t+d)&0xffffffff)
+              open(n,'wb').write(b'\x89PNG\r\n\x1a\n'+ch(b'IHDR',struct.pack('>IIBBBBB',64,64,8,2,0,0,0))+ch(b'IDAT',zlib.compress(raw))+ch(b'IEND',b''))
+          png('red.png',(230,80,90)); png('blue.png',(80,110,240)); png('blue_copy.png',(80,110,240))"
+          zip -r demo.zip folder notes.txt >/dev/null
+          tar czf demo.tar.gz folder
+          7z a demo.7z folder >/dev/null
+          head -c 300000 /dev/urandom > big.bin; cp big.bin big_copy.bin
+          ls -la
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Run emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: bash scripts/smoke.sh
+      - name: Publish screenshots
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd shots && zip -r ../smoke-shots.zip . && cd ..
+          gh release create "smoke-${{ github.run_number }}" smoke-shots.zip shots/crashes.txt --prerelease \
+            --title "Smoke test ${{ github.run_number }} ($TAG)" --notes "Capturas del emulador para $TAG"
