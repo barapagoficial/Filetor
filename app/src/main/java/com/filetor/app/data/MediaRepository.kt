@@ -42,7 +42,7 @@ object MediaRepository {
             Category.ARCHIVES -> archiveExt.joinToString(" OR ") { "${MediaStore.Files.FileColumns.DATA} LIKE ?" } to archiveExt.map { "%.$it" }.toTypedArray()
             Category.RECENT -> "${MediaStore.Files.FileColumns.DATE_MODIFIED}>? AND ${MediaStore.Files.FileColumns.MIME_TYPE} IS NOT NULL" to
                 arrayOf(((System.currentTimeMillis() / 1000) - 7 * 86400).toString())
-            Category.DOWNLOADS -> "" to emptyArray()
+            Category.DOWNLOADS -> "" to emptyArray<String>()
         }
         val out = mutableListOf<FileEntry>()
         val proj = arrayOf(MediaStore.Files.FileColumns.DATA, MediaStore.Files.FileColumns.SIZE, MediaStore.Files.FileColumns.DATE_MODIFIED)
